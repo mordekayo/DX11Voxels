@@ -79,7 +79,7 @@ namespace RenderingPBRTut {
 		rendSys = new RenderingSystemPBR(this);
 
 #pragma region Scene
-///*
+/*
 		auto aaa = CreateNewStaticMeshActorAssimp("Content/wood_root/Aset_wood_root_M_rkswd_LOD0.fbx");
 		aaa->FindComponentByClass<ZStaticMeshComponent>()->Meshes[0]->Materials[0].ReloadTextures(
 			L"Content/wood_root/Aset_wood_root_M_rkswd_2K_Albedo.jpg",

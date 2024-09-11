@@ -8,7 +8,7 @@
 #include <unordered_set>
 
 
-
+std::vector<int> v {2,3,6,7};
 VoxelTree::VoxelTree(const Camera& inCamera) : camera(inCamera), js(vgjs::thread_count_t{8})
 {
 	LoadShaders();
@@ -64,8 +64,8 @@ void ClosestPtPointAABB(Vector3 p, DirectX::BoundingBox b, Vector3& q)
 
 bool VoxelTree::NeedToSplit(VoxelNode* node, const Camera& camera)
 {
-	//return node->depth != 2;
-
+	return node->depth == 0;
+	
 	float nearPlane = camera.NearPlaneDistance;
 	float farPlane	= camera.FarPlaneDistance;
 
@@ -313,16 +313,20 @@ void VoxelTree::DrawDebug()
 
 	Game::Instance->Renderer2D->DrawOnScreenMessage(str);
 	Game::Instance->DebugRender->DrawBoundingBox(rootNode->aabb);
-	//for (const auto* n : lastQuery.nodes) {
-	//	Game::Instance->DebugRender->DrawBoundingBox(n->aabb);
-	//}
-
+	for (const auto* n : lastQuery.nodes) {
+		Game::Instance->DebugRender->DrawBoundingBox(n->aabb);
+	}
 }
-
 
 void VoxelTree::InitializeNodeParams(VoxelNode* node, uint32_t nodeIndex)
 {
 	node->depth = node->parent ? node->parent->depth + 1 : 0;
+
+	if(std::find(v.begin(), v.end(), nodeIndex) != v.end())
+	{
+		node->depth += 1;
+	}
+
 	double halfNodeSize = CalculateSizeByDepth(node->depth) * 0.5;
 
 	Vector3 pos = Vector3::Zero;
@@ -456,6 +460,7 @@ void VoxelTree::Draw()
 	ctx->VSSetConstantBuffers(0, 1, &constPointVolBuf);
 
 	int visCount = 0;
+	int i = 0;
 	for (auto* node : lastQuery.nodes) {
 		const auto& chunk = *node;
 
@@ -466,12 +471,21 @@ void VoxelTree::Draw()
 		
 		visCount++;
 		Vector3 nodePosition = chunk.aabb.Center - chunk.aabb.Extents;
-		constData.PositionSize = Vector4(nodePosition, voxelSize);
+		if(std::find(v.begin(), v.end(), i) != v.end())
+		{
+			constData.PositionSize = Vector4(nodePosition, voxelSize/4);
+		}
+		else
+		{
+			constData.PositionSize = Vector4(nodePosition, voxelSize);
+		}
+		
 		constData.ScaleParticleSizeThreshold = Vector4(chunk.aabb.Extents.x*2, 1, 0, 0);
 		ctx->UpdateSubresource(constPointVolBuf, 0, nullptr, &constData, 0, 0);
 	
 		ctx->VSSetShaderResources(0, 1, &chunk.appendSRV);
 		ctx->DrawInstancedIndirect(chunk.indirectBuffer, 0);
+		i++;
 	}
 
 	ctx->VSSetShader(nullptr, nullptr, 0);

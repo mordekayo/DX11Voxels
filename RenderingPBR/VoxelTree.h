@@ -122,8 +122,8 @@ struct VoxelTree
 	VoxelNode* rootNode = nullptr;
 
 	uint64_t minNodeSizeInMeters = 16;
-	uint64_t maxDepth = 8;
-	uint32_t voxelSize = 16;
+	uint64_t maxDepth = 2;
+	uint32_t voxelSize = 4;
 
 	float falloff = 2.0f;
 
